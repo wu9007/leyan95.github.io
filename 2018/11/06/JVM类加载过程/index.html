@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>JVM类加载过程 | 树生</title><link rel="stylesheet" type="text/css" href="/css/normalize.css"><link rel="stylesheet" type="text/css" href="/css/highlight.css"><link rel="stylesheet" type="text/css" href="/css/font.css"><link rel="stylesheet" type="text/css" href="/css/noise.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"></head><body><article class="wrapper"><div class="post-main"><div class="nav"><nav class="container"><a class="sidebar-nav-item active" href="/">Home</a><a class="sidebar-nav-item" href="/archives">Archives</a></nav><div class="container post-meta"><div class="post-tags"><a class="post-tag-link" href="/tags/JVM/">JVM</a></div><div class="post-time">2018-11-06</div></div></div><div class="container post-header"><h1>JVM类加载过程</h1></div><div class="container post-content"><p>JVM类加载分为5个过程：加载，验证，准备，解析，初始化，使用，卸载，如下图所示：<br><img src="https://upload-images.jianshu.io/upload_images/3646846-f27225423b01589d?imageMogr2/auto-orient/strip%7CimageView2/2/w/641/format/webp" alt="加载过程"></p>
+<h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><blockquote>
+<p>加载是指<strong>查找字节流</strong>并据此<strong>创建类</strong>的过程。</p>
+</blockquote>
+<ul>
+<li>(1) 数组类没有对应的字节流，它是由JVM根据元素类型和维度,创建的。</li>
+<li>(2) 除了数组类，其他类都是JVM借助<code>BootStrap ClassLoader</code>、<code>ClassLoader</code>、<code>ExtClassLoader</code>、<code>AppClassloader</code>等类加载器来查找字节流并创建的。</li>
+<li>(3) 在JVM中类的唯一性是由类的全名和类加载器确定的，相同的class文件被不同的类加载器加载生成的两个类是不同的。</li>
+</ul>
+<h3 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h3><blockquote>
+<p>连接是指将创建好的类放入JVM并使之能够很好的执行的过程。<br><br>它可分为验证、准备、解析三个步骤。</p>
+</blockquote>
+<ul>
+<li>(1) 验证阶段是为了保证创建的类能够满足JVM的约束条件，例如：jdk版本验证。</li>
+<li>(2) 准备阶段的目的是<strong>为创建的类的静态字段分配内存</strong>，对静态字段具体的初始化会在初始化阶段进行。<br><br>部分虚拟机在此阶段还会构造跟其他类层次相关的数据结构（比如用来实现虚拟方法的动态绑定的方法表），在这个阶段该类无法知道其他类、字段及其方法的地址，因此在需要引用这些成员的时候，java编译器会生成一个符号引用，在运行阶段该引用才能够定位到具体的地址。</li>
+<li>(3) 解析阶段的目的是将符号引用解析成实际引用，如果符号引用指向一个未被加载的成员，那个将触发JVM对这个类的加载。<br><br>JVM规范并没有要求在连接过程中执行解析工作，它仅仅规定如果某些字段使用了符号引用，那么在执行这些字节码之前需要先完成对这些富豪饮用的解析。</li>
+</ul>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><blockquote>
+<p>初始化的目的是为标记为常量的字段赋值，以及执行<code>clinit</code>方法的过程。</p>
+</blockquote>
+<p>在初始化一个静态字段的时候，我们可以再声明时直接赋值，也可以在静态代码块中对其进行赋值。<br><br>如果直接赋值的字段被final所修饰，并且字段为基本数据类型和String类型，那么该字段会被编译标记为常量值，其初始化直接由JVM完成。除此之外的所有直接赋值和静态代码块中赋值操作，会被java编译器放到<code>clinit</code>方法中。<br><br></p>
+<h4 id="什么时候需要对类进行初始化？"><a href="#什么时候需要对类进行初始化？" class="headerlink" title="什么时候需要对类进行初始化？"></a>什么时候需要对类进行初始化？</h4><p>(1) 虚拟机启动的时候，初始化用户指定的主类。<br><br>(2) 使用new该类实例化对象的时候。<br><br>(3) 访问静态字段或静态方法时，初始化静态字段或静态方法所在类。<br><br>(4) 子类初始化会触发父类初始化。<br><br>(5) 如果接口定义了default方法，那么实现该接口的类初始化会触发该接口的初始化。<br><br>(6) 使用反射API的时候。<br><br>(7) 当使用JDK1.7的动态语言支持时，如果一个java.invoke.MethodHandle实例最后的解析结果REF_getStatic、REF_putStatic、REF_invokeStatic的方法句柄，并且这个方法句柄所对应的类没有进行过初始化，则需要先触发其初始化。</p>
+</div></div><div class="post-main post-comment"></div></article><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.css"><script src="//cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script><script src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script>$(document).ready(function() {
+  $(".fancybox").fancybox();
+});
+</script></body></html>
